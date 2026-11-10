@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CEPHE Sunumu</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Literata:opsz,wght@7..72,400;7..72,700&display=swap">
+<style>
+/* Sinema salonu düzeni: önce film, sonra kısa ve ölçülebilir gerekçeler. Bilinçli olarak tek (koyu) tema. */
+:root {
+  --gece: #0E1413;
+  --yuzey: #161E1C;
+  --cizgi: #2A3532;
+  --kagit: #F2EFE6;
+  --soluk: #A9B4AF;
+  --vurgu: #C8323C;
+  --vurgu-acik: #F2C6C0;
+  --g-irak: #6C9BE0; --g-kanal: #D9AE3C; --g-canakkale: #3FB0A8;
+  --f-baslik: "Literata", Georgia, "Times New Roman", serif;
+  --f-metin: "Archivo", "Segoe UI", system-ui, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--gece); color: var(--kagit); font: 400 17px/1.6 var(--f-metin); }
+.sayfa { max-width: 1120px; margin: 0 auto; padding-block: 40px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 56px; }
+.ust { display: grid; gap: 10px; }
+.ust .alt { color: var(--soluk); font-weight: 500; font-size: 17px; letter-spacing: 0; }
+.ust p { margin: 0; color: var(--vurgu-acik); font-weight: 600; font-size: 15px; letter-spacing: .02em; }
+h1 { margin: 0; font: 700 clamp(34px, 5.4vw, 60px)/1.05 var(--f-baslik); letter-spacing: -.015em; text-wrap: balance; }
+.film { margin: 0; border-radius: 14px; overflow: hidden; background: #000; box-shadow: 0 50px 100px -40px rgba(0,0,0,.9), 0 0 0 1px var(--cizgi); }
+.film video { display: block; width: 100%; max-width: 100%; aspect-ratio: 16 / 9; background: #000; }
+.film figcaption { padding: 12px 16px; font-size: 14px; color: var(--soluk); background: var(--yuzey); }
+.tez { margin: 0; max-width: 34ch; font: 700 clamp(26px, 3.4vw, 38px)/1.2 var(--f-baslik); text-wrap: balance; }
+.tez span { color: var(--soluk); font-weight: 400; }
+.sayilar { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; border-block: 1px solid var(--cizgi); padding-block: 28px; }
+.sayilar div { display: grid; gap: 4px; }
+.sayilar b { font: 700 clamp(40px, 6vw, 64px)/1 var(--f-baslik); font-variant-numeric: tabular-nums; }
+.sayilar span { color: var(--soluk); font-size: 15px; }
+.sayilar i { display: block; width: 36px; height: 4px; border-radius: 2px; background: var(--r); }
+h2 { margin: 0 0 18px; font: 700 26px/1.2 var(--f-baslik); }
+.ozellikler { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 40px; }
+.ozellikler h3 { margin: 0 0 6px; font: 600 18px/1.3 var(--f-metin); color: var(--kagit); }
+.ozellikler p { margin: 0; color: var(--soluk); max-width: 46ch; }
+.iki { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 40px; }
+ul.tik { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+ul.tik li { display: grid; grid-template-columns: 22px 1fr; gap: 12px; color: var(--soluk); }
+ul.tik li::before { content: ""; width: 18px; height: 18px; margin-top: 4px; border-radius: 50%; background: var(--vurgu) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6.5 12.5l3.5 3.5 7.5-8' stroke='white' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/14px no-repeat; }
+ul.tik b { color: var(--kagit); font-weight: 600; }
+.cagri { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 24px; padding: 28px; border-radius: 14px; background: var(--yuzey); border: 1px solid var(--cizgi); }
+.cagri p { margin: 0; flex: 1 1 320px; min-width: 0; }
+.cagri a { display: inline-flex; align-items: center; min-height: 48px; padding: 0 22px; border-radius: 8px; background: var(--vurgu); color: #fff; font-weight: 600; text-decoration: none; }
+.cagri a:focus-visible { outline: 3px solid var(--kagit); outline-offset: 3px; }
+.dip { color: var(--soluk); font-size: 14px; margin: 0; }
+@media (max-width: 760px) {
+  .sayilar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ozellikler, .iki { grid-template-columns: 1fr; }
+  .sayfa { gap: 40px; padding-block: 24px 48px; }
+}
+</style>
+
+</head>
+<body>
+<main class="sayfa">
+  <header class="ust">
+    <p>8. sınıf T.C. İnkılap Tarihi ve Atatürkçülük · Etkileşimli ders materyali</p>
+    <h1>CEPHE: Coğrafi ve Etkileşimli Platformla Haritalandırılmış Eğitim</h1>
+    <p class="alt">(I. Dünya Savaşı'nın Dijital Zaman Çizelgesi ve Harita ile Öğretimi)</p>
+  </header>
+
+  <figure class="film">
+    <video id="film" controls playsinline preload="metadata" poster="poster.jpg" src="tanitim.mp4"></video>
+    <figcaption>Tanıtım filmi, 70 saniye. Sesi açarak izleyin.</figcaption>
+  </figure>
+
+  <p class="tez">Öğrenci tarihi ezberlemez; olayın nerede, ne zaman ve neden yaşandığını görür. <span>Tek bağlantıyla, kurulum gerektirmeden, akıllı tahtada.</span></p>
+
+  <section class="sayilar" aria-label="Materyalin kapsamı">
+    <div style="--r: var(--g-irak)"><b>31</b><i></i><span>olay; her biri seslendirmeli ve canlandırma videolu</span></div>
+    <div style="--r: var(--g-kanal)"><b>8</b><i></i><span>belgesel video</span></div>
+    <div style="--r: var(--vurgu)"><b>158</b><i></i><span>soru, her olaya en az 5</span></div>
+    <div style="--r: var(--g-canakkale)"><b>7</b><i></i><span>cephe, tek haritada</span></div>
+  </section>
+
+  <section>
+    <h2>Sınıfta neler var</h2>
+    <div class="ozellikler">
+      <div><h3>Kaydırılabilir zaman çizgisi</h3><p>Savaşın her ayı çizgide görünür. Cephe çubukları, Karadeniz'e açılış gibi anlık olaylarla Çanakkale ve Medine Müdafaası gibi aylarca, yıllarca süren direnişlerin farkını gösterir.</p></div>
+      <div><h3>1914 siyasi haritası</h3><p>Harita dünyadan olayın yerine yaklaşır; birden çok yerde yaşanan olaylarda bütün noktaları birlikte gösterir. O tarihte savaşın sürdüğü cepheler ayrıca işaretlenir.</p></div>
+      <div><h3>Canlandırma, seslendirme, belgesel</h3><p>Her olayın arşiv görseli canlanır ve notu tahtanın arkasından okunacak büyüklükte akar. Her olayın seslendirmesi dinlenebilir; sekiz olayda belgesel video izlenebilir.</p></div>
+      <div><h3>Oyun tadında konu testi</h3><p>Renkli ve şekilli dört seçenek, süre ve hız puanı. Her cevaptan sonra kısa açıklama gelir; sonuç öğrencinin cihazında saklanır.</p></div>
+    </div>
+  </section>
+
+  <section class="iki">
+    <div>
+      <h2>Kalite güvencesi</h2>
+      <ul class="tik">
+        <li><span><b>Öğretmenin kendi metni.</b> Olay özetleri, tarihleri ve görselleri ders öğretmeninin hazırladığı kaynaktan alındı.</span></li>
+        <li><span><b>Tarihçi denetimi.</b> Açık kaynaklı 1914 haritasındaki hatalar düzeltildi: Doğu Trakya, Kars–Ardahan, Kafkasya ve Ege adaları.</span></li>
+        <li><span><b>Ölçme uzmanı denetimi.</b> 150 soru tek doğru cevap, çeldirici kalitesi ve ipucu sızıntısı için tek tek kontrol edildi.</span></li>
+      </ul>
+    </div>
+    <div>
+      <h2>Kullanım</h2>
+      <ul class="tik">
+        <li><span><b>Kurulum yok.</b> Tarayıcıda açılır; akıllı tahta, bilgisayar, tablet ve telefonda çalışır.</span></li>
+        <li><span><b>Sunum modu.</b> Öğretmen olayları tahtada sırayla otomatik oynatabilir.</span></li>
+        <li><span><b>Bağımsız çalışma.</b> Öğrenci kendi hızında gezer, incelediği olaylar ve test sonuçları işaretlenir.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="cagri">
+    <p>Materyali şimdi açıp bir olay seçerek deneyebilirsiniz.</p>
+    <a href="../">Uygulamayı aç</a>
+  </section>
+
+  <p class="dip">1914 sınırları: historical-basemaps (A. Ourednik, GPL-3.0). Görseller ders öğretmeninin derlediği arşivden alınmıştır.</p>
+</main>
+
+</body>
+</html>
