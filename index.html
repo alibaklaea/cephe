@@ -1022,6 +1022,19 @@ h1, h2 { margin: 0; text-wrap: balance; }
 .vis-item.g-siyasi { --gr: var(--g-siyasi); }
 .vis-item .vis-item-overflow { overflow: visible; }
 </style>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1C2321">
+<link rel="icon" type="image/png" href="simge/favicon.png">
+<link rel="apple-touch-icon" href="simge/apple-touch-icon.png">
+<style>
+.guncel-serit { position: fixed; left: 50%; top: 12px; transform: translateX(-50%); z-index: 3000; display: flex; align-items: center; gap: 10px; max-width: calc(100% - 24px); padding: 10px 12px 10px 16px; border-radius: 10px; background: var(--yuzey); color: var(--murekkep); border: 1px solid var(--cizgi); border-left: 5px solid var(--vurgu); box-shadow: var(--golge); font-size: 15px; }
+.guncel-serit[hidden], .guncel-durum[hidden], #uygulamaYukle[hidden] { display: none; }
+.guncel-ic { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; }
+.guncel-ic span { color: var(--soluk); }
+.guncel-ic a { text-decoration: none; }
+.guncel-kapat { border: 0; background: none; color: var(--soluk); font-size: 22px; line-height: 1; width: 34px; height: 34px; cursor: pointer; }
+.guncel-durum { position: fixed; right: 16px; bottom: 16px; z-index: 3000; padding: 8px 14px; border-radius: 999px; background: var(--murekkep); color: var(--yuzey); font-size: 13.5px; box-shadow: var(--golge); }
+</style>
 </head>
 <body>
 <header class="ust">
@@ -4820,6 +4833,104 @@ window.SORULAR = {
   setTimeout(() => sec(OLAYLAR.some((o) => o.id === ilk) ? ilk : OLAYLAR[0].id), azHareket ? 0 : 400);
 })();
 
+</script>
+<script>window.CEPHE_SURUM = {"surum": "2.1.0", "tarih": "10 Kasım 2026"};</script>
+<script>
+/* Sürüm, kurulum ve güncelleme.
+   - GitHub sitesinde: uygulama olarak yükleme düğmesi, çevrimdışı önbellek (sw.js), yeni sürüm hazır olunca bildirim.
+   - Çevrimdışı pakette (CEPHE.html, file://): internet varsa surum.json'a bakar, yeni sürüm varsa indirme bağlantısını gösterir. */
+(function () {
+  "use strict";
+  const S = window.CEPHE_SURUM;
+  const UZAK = "https://alibaklaea.github.io/cephe/";
+  const paket = location.protocol === "file:";
+  const kacis = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const buyuk = (a, b) => {
+    const x = String(a).split(".").map(Number), y = String(b).split(".").map(Number);
+    for (let i = 0; i < 3; i++) if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) > (y[i] || 0);
+    return false;
+  };
+
+  const serit = document.createElement("div");
+  serit.className = "guncel-serit"; serit.hidden = true; serit.setAttribute("role", "status");
+  document.body.appendChild(serit);
+  function goster(html) {
+    serit.innerHTML = `<div class="guncel-ic">${html}</div><button class="guncel-kapat" aria-label="Bildirimi kapat">×</button>`;
+    serit.hidden = false;
+    serit.querySelector(".guncel-kapat").onclick = () => { serit.hidden = true; };
+  }
+  const durum = document.createElement("div");
+  durum.className = "guncel-durum"; durum.hidden = true; durum.setAttribute("role", "status");
+  document.body.appendChild(durum);
+
+  // Yardım penceresinde sürüm bilgisi
+  const pencere = document.querySelector("#yardim .pencere");
+  if (pencere) {
+    const p = document.createElement("p");
+    p.className = "not surum-bilgi";
+    p.textContent = `Sürüm ${S.surum} · ${S.tarih}${paket ? " · çevrimdışı paket" : ""}`;
+    pencere.insertBefore(p, pencere.querySelector(".dugme.birincil"));
+  }
+
+  if (paket) {
+    if (navigator.onLine === false) return;
+    fetch(UZAK + "surum.json?t=" + Date.now(), { cache: "no-store" })
+      .then((r) => r.json())
+      .then((u) => {
+        if (!buyuk(u.surum, S.surum)) return;
+        goster(`<b>Yeni sürüm var: ${kacis(u.surum)}</b> <span>${kacis(u.notlar || "")}</span>
+          <a class="dugme kucuk birincil" href="${kacis(u.indir)}" target="_blank" rel="noopener">Yeni paketi indir</a>
+          <a class="dugme kucuk" href="${UZAK}" target="_blank" rel="noopener">İnternetten aç</a>`);
+      })
+      .catch(() => { /* internet yok ya da site açılamadı: sessizce devam */ });
+    return;
+  }
+
+  // Uygulama olarak yükleme (Chrome / Edge)
+  let istem = null;
+  const yukle = document.createElement("button");
+  yukle.className = "dugme"; yukle.id = "uygulamaYukle"; yukle.hidden = true;
+  yukle.textContent = "Uygulamayı yükle";
+  yukle.title = "CEPHE'yi bilgisayara ya da tahtaya uygulama olarak yükle; internet olmadan da açılır";
+  const araclar = document.querySelector(".ust-araclar");
+  if (araclar) araclar.insertBefore(yukle, araclar.firstChild);
+  window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); istem = e; yukle.hidden = false; });
+  yukle.onclick = async () => { if (!istem) return; istem.prompt(); await istem.userChoice; istem = null; yukle.hidden = true; };
+  window.addEventListener("appinstalled", () => { yukle.hidden = true; });
+
+  if (!("serviceWorker" in navigator)) return;
+  let yenileniyor = false;
+  navigator.serviceWorker.addEventListener("controllerchange", () => { if (yenileniyor) return; yenileniyor = true; location.reload(); });
+  navigator.serviceWorker.addEventListener("message", (e) => {
+    const d = e.data || {};
+    if (d.tip !== "ilerleme") return;
+    durum.hidden = false;
+    durum.textContent = d.yuzde >= 100
+      ? (d.grup === "belgesel" ? "Belgeseller de internetsiz kullanıma hazır" : "İnternetsiz kullanıma hazır")
+      : `${d.grup === "belgesel" ? "Belgeseller" : "Uygulama"} internetsiz kullanım için indiriliyor: %${d.yuzde}`;
+    clearTimeout(durum.t);
+    if (d.yuzde >= 100) durum.t = setTimeout(() => { durum.hidden = true; }, 5000);
+  });
+  navigator.serviceWorker.register("sw.js").then((kayit) => {
+    const hazir = (sw) => {
+      goster(`<b>Yeni sürüm hazır.</b> <span>Güncellemek için sayfa yenilenecek.</span>
+        <button class="dugme kucuk birincil" id="simdiGuncelle">Şimdi güncelle</button>`);
+      document.getElementById("simdiGuncelle").onclick = () => sw.postMessage({ tip: "atla" });
+    };
+    if (kayit.waiting && navigator.serviceWorker.controller) hazir(kayit.waiting);
+    kayit.addEventListener("updatefound", () => {
+      const yeni = kayit.installing;
+      if (!yeni) return;
+      yeni.addEventListener("statechange", () => { if (yeni.state === "installed" && navigator.serviceWorker.controller) hazir(yeni); });
+    });
+    // Akıllı tahtada uzun süre açık kalırsa saatte bir güncelleme denetimi
+    setInterval(() => kayit.update().catch(() => {}), 60 * 60 * 1000);
+    // Belgeseller büyük dosyalar: yalnız bilgisayar ve tahtada arka planda indirilir
+    navigator.serviceWorker.ready.then((r) => {
+      if (!window.matchMedia("(max-width: 900px)").matches && r.active) r.active.postMessage({ tip: "belgesel" });
+    });
+  }).catch(() => { /* yerel dosyadan açılınca hizmet çalışanı yok */ });
+})();
 </script>
 </body>
 </html>

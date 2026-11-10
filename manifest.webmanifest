@@ -1,0 +1,29 @@
+{
+ "name": "CEPHE: Coğrafi ve Etkileşimli Platformla Haritalandırılmış Eğitim",
+ "short_name": "CEPHE",
+ "description": "I. Dünya Savaşı'nın dijital zaman çizelgesi ve harita ile öğretimi",
+ "lang": "tr",
+ "start_url": "./",
+ "scope": "./",
+ "display": "standalone",
+ "background_color": "#1C2321",
+ "theme_color": "#1C2321",
+ "icons": [
+  {
+   "src": "simge/simge-192.png",
+   "sizes": "192x192",
+   "type": "image/png"
+  },
+  {
+   "src": "simge/simge-512.png",
+   "sizes": "512x512",
+   "type": "image/png"
+  },
+  {
+   "src": "simge/simge-maskeli-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "maskable"
+  }
+ ]
+}
