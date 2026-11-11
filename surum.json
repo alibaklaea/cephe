@@ -1,6 +1,6 @@
 {
- "surum": "2.1.0",
- "tarih": "10 Kasım 2026",
- "notlar": "Uygulama olarak yüklenebilir ve internet olmadan çalışır.",
+ "surum": "2.2.0",
+ "tarih": "11 Kasım 2026",
+ "notlar": "Tam ekran, büyük ekranda otomatik seslendirme, okul internetinde dış adres gerektirmez.",
  "indir": "https://github.com/alibaklaea/cephe/releases/latest/download/CEPHE.zip"
 }

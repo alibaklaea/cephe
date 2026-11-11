@@ -4,9 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>CEPHE: Coğrafi ve Etkileşimli Platformla Haritalandırılmış Eğitim</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Literata:opsz,wght@7..72,400;7..72,700&display=swap">
+<link rel="stylesheet" href="fontlar/fontlar.css">
 <style>
 /* required styles */
 
@@ -1013,6 +1011,10 @@ h1, h2 { margin: 0; text-wrap: balance; }
 .belgesel-ac:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
 .belgesel-ac[hidden] { display: none; }
 .test-soru.uzun { font-size: 20px; line-height: 1.4; text-align: left; }
+.buyuk-alt { display: flex; justify-content: center; }
+.perde .dinle { --gr: #E2575F; background: rgba(255, 255, 255, .95); color: #1C2321; min-height: 44px; font-size: 16px; }
+.perde .dinle[hidden] { display: none; }
+#tamEkran[aria-pressed="true"] { background: var(--murekkep); color: var(--yuzey); }
 @media (max-width: 700px) { .test-soru.uzun { font-size: 16.5px; } }
 @media (prefers-reduced-motion: reduce) { .devam-isaret { animation: none; } }
 
@@ -1045,6 +1047,7 @@ h1, h2 { margin: 0; text-wrap: balance; }
   <div class="ust-araclar">
     <span class="ilerleme" id="ilerleme" title="İncelediğin olaylar">0 / 31 olay incelendi</span>
     <button class="dugme" id="sunum" aria-pressed="false" title="Olayları sırayla otomatik göster">Sunumu başlat</button>
+    <button class="dugme" id="tamEkran" aria-pressed="false" title="Tam ekrana geç">Tam ekran</button>
     <button class="dugme" id="yardimAc">Nasıl kullanılır?</button>
   </div>
 </header>
@@ -1120,6 +1123,9 @@ h1, h2 { margin: 0; text-wrap: balance; }
   <figure>
     <img id="buyukImg" alt="" />
     <video id="buyukVideo" controls playsinline hidden></video>
+    <div class="buyuk-alt">
+      <button class="dinle" id="buyukDinle" aria-pressed="false" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path id="buyukDinleIkon" d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg><span id="buyukDinleYazi">Dinle</span><i id="buyukDinleIlerleme"></i></button>
+    </div>
     <figcaption id="buyukYazi"></figcaption>
   </figure>
   <button class="dugme kapat" data-kapat aria-label="Kapat">Kapat</button>
@@ -1164,9 +1170,9 @@ h1, h2 { margin: 0; text-wrap: balance; }
   </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/vis-timeline/7.7.3/vis-timeline-graph2d.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+<script src="kutuphane/leaflet.js"></script>
+<script src="kutuphane/vis-timeline-graph2d.min.js"></script>
+<script src="kutuphane/topojson-client.min.js"></script>
 <script>
 window.VERI = {
  "olaylar": [
@@ -4584,15 +4590,29 @@ window.SORULAR = {
 
   /* Olay videosu: kartta sessiz oynar; biterse notun tam göründüğü karede durur */
   const video = $("#olayVideo");
+  const MP4 = !!document.createElement("video").canPlayType('video/mp4; codecs="avc1.42E01E, mp4a.40.2"');
+  const AAC = !!document.createElement("audio").canPlayType('audio/mp4; codecs="mp4a.40.2"');
+  const webm = (yol) => yol.replace(/\.mp4$/, ".webm");
+  // Biçim yedeği: MP4 açılmazsa aynı dosyanın WebM kopyası denenir
+  function kaynakVer(ogee, yol, uygun) {
+    ogee.onerror = null;
+    ogee.src = uygun ? yol : webm(yol);
+    return new Promise((tamam) => {
+      ogee.onerror = () => {
+        if (/\.mp4$/.test(ogee.src)) { ogee.onerror = () => tamam(false); ogee.src = webm(yol); ogee.load(); }
+        else tamam(false);
+      };
+      ogee.onloadeddata = () => tamam(true);
+    });
+  }
   const videoYolu = (o) => `videolar/${o.id}.mp4`;
   let videoBozuk = new Set();
   function videoGoster(o) {
     if (videoBozuk.has(o.id)) { video.hidden = true; video.removeAttribute("src"); $("#videoArac").hidden = true; return false; }
     video.hidden = false; $("#videoArac").hidden = false;
     video.poster = o.gorsel ? o.gorsel.dosya : "";
-    video.src = videoYolu(o);
     video.muted = true;
-    video.onerror = () => { videoBozuk.add(o.id); if (durum.secili === o.id) sec(o.id); };
+    kaynakVer(video, videoYolu(o), MP4).then((oldu) => { if (!oldu) { videoBozuk.add(o.id); if (durum.secili === o.id) sec(o.id); } });
     const p = video.play(); if (p && p.catch) p.catch(() => { /* otomatik oynatma engellendi */ });
     return true;
   }
@@ -4624,12 +4644,16 @@ window.SORULAR = {
     $("#dinle").setAttribute("aria-label", $("#dinle").title);
     $("#dinleIkon").setAttribute("d", calar ? "M7 5h3.5v14H7zM13.5 5H17v14h-3.5z" : "M8 5.5v13l11-6.5z");
     $("#dinleYazi").textContent = calar ? "Durdur" : `Dinle ${o && o.ses ? dakika(o.ses.sure) : ""}`;
+    $("#buyukDinle").hidden = !(o && o.ses);
+    $("#buyukDinle").setAttribute("aria-pressed", String(calar));
+    $("#buyukDinleIkon").setAttribute("d", $("#dinleIkon").getAttribute("d"));
+    $("#buyukDinleYazi").textContent = calar ? "Seslendirmeyi durdur" : "Seslendirmeyi dinle";
   }
   function anlatimHazirla(o) {
     anlatim.pause();
     $("#dinle").hidden = !o.ses;
     $("#dinleIlerleme").style.width = "0%";
-    if (o.ses) anlatim.src = o.ses.dosya; else anlatim.removeAttribute("src");
+    if (o.ses) kaynakVer(anlatim, o.ses.dosya, AAC); else anlatim.removeAttribute("src");
     dinleDugmesi();
   }
   $("#dinle").onclick = () => {
@@ -4637,8 +4661,9 @@ window.SORULAR = {
     else anlatim.pause();
   };
   ["play", "pause", "ended"].forEach((ev) => anlatim.addEventListener(ev, dinleDugmesi));
-  anlatim.addEventListener("timeupdate", () => { if (anlatim.duration) $("#dinleIlerleme").style.width = `${(anlatim.currentTime / anlatim.duration) * 100}%`; });
-  anlatim.addEventListener("ended", () => { $("#dinleIlerleme").style.width = "0%"; });
+  anlatim.addEventListener("timeupdate", () => { if (anlatim.duration) { const y = `${(anlatim.currentTime / anlatim.duration) * 100}%`; $("#dinleIlerleme").style.width = y; $("#buyukDinleIlerleme").style.width = y; } });
+  anlatim.addEventListener("ended", () => { $("#dinleIlerleme").style.width = "0%"; $("#buyukDinleIlerleme").style.width = "0%"; });
+  $("#buyukDinle").onclick = (e) => { e.stopPropagation(); $("#dinle").click(); };
   $("#tekrarOynat").onclick = () => { video.currentTime = 0; video.play(); };
   video.addEventListener("ended", () => { video.currentTime = Math.max(0, video.duration - 0.8); });
   video.onclick = () => buyukAc();
@@ -4652,8 +4677,11 @@ window.SORULAR = {
       sunumuDurdur();
       video.pause();
       $("#buyukImg").hidden = true; bv.hidden = false;
-      bv.src = videoYolu(o); bv.poster = o.gorsel ? o.gorsel.dosya : ""; bv.muted = false; bv.currentTime = 0;
+      bv.poster = o.gorsel ? o.gorsel.dosya : ""; bv.muted = false; bv.loop = false;
+      buyukMod = "canlandirma";
+      kaynakVer(bv, videoYolu(o), MP4);
       const p = bv.play(); if (p && p.catch) p.catch(() => {});
+      anlatimSirada(o);
     } else {
       if (!o.gorsel) return;
       bv.hidden = true; bv.pause(); $("#buyukImg").hidden = false;
@@ -4663,6 +4691,30 @@ window.SORULAR = {
     $("#buyukFoto").hidden = false;
     $("#buyukFoto [data-kapat]").focus();
   }
+  // Geçiş sesi canlandırma videosunun ilk saniyelerinde: bittiğinde seslendirme başlar
+  const GECIS_SN = 3.9;
+  let buyukMod = "", anlatimZaman = null;
+  function anlatimSirada(o) {
+    clearTimeout(anlatimZaman);
+    anlatim.pause();
+    if (!o.ses) return;
+    anlatimZaman = setTimeout(() => {
+      if ($("#buyukFoto").hidden || durum.secili !== o.id) return;
+      try { anlatim.currentTime = 0; } catch (e) { /* henüz yüklenmedi */ }
+      const p = anlatim.play(); if (p && p.catch) p.catch(() => {});
+    }, GECIS_SN * 1000);
+  }
+  // Canlandırma biterse not tam okunurken kalan karede durur; seslendirme sürerken pencere kapanmaz
+  $("#buyukVideo").addEventListener("ended", () => {
+    const bv = $("#buyukVideo");
+    if (buyukMod === "canlandirma") { try { bv.currentTime = Math.max(0, bv.duration - 0.8); } catch (e) { /* yoksay */ } }
+  });
+  function buyukKapat() {
+    clearTimeout(anlatimZaman);
+    anlatim.pause();
+    $("#buyukVideo").pause();
+    buyukMod = "";
+  }
   $("#fotoImg").onclick = buyukAc;
   $("#buyut").onclick = buyukAc;
   function belgeselAc() {
@@ -4671,14 +4723,40 @@ window.SORULAR = {
     sunumuDurdur(); video.pause(); anlatim.pause(); gecis.pause();
     const bv = $("#buyukVideo");
     $("#buyukImg").hidden = true; bv.hidden = false;
-    bv.poster = ""; bv.src = o.belgesel.dosya; bv.muted = false; bv.currentTime = 0;
+    bv.poster = ""; bv.muted = false; buyukMod = "belgesel"; clearTimeout(anlatimZaman);
+    kaynakVer(bv, o.belgesel.dosya, MP4);
     const p = bv.play(); if (p && p.catch) p.catch(() => {});
     $("#buyukYazi").textContent = `Belgesel · ${o.tarihEtiket} · ${o.baslik}`;
     $("#buyukFoto").hidden = false;
     $("#buyukFoto [data-kapat]").focus();
   }
   $("#belgeselAc").onclick = (e) => { e.stopPropagation(); belgeselAc(); };
-  document.querySelectorAll(".perde").forEach((p) => p.addEventListener("click", (e) => { if (e.target === p || e.target.closest("[data-kapat]")) { p.hidden = true; $("#buyukVideo").pause(); } }));
+  document.querySelectorAll(".perde").forEach((p) => p.addEventListener("click", (e) => { if (e.target === p || e.target.closest("[data-kapat]")) { p.hidden = true; if (p.id === "buyukFoto") buyukKapat(); } }));
+  const tamEkranMi = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
+  function tamEkranAc() {
+    const el = document.documentElement;
+    const f = el.requestFullscreen || el.webkitRequestFullscreen;
+    if (f && !tamEkranMi()) { try { const p = f.call(el); if (p && p.catch) p.catch(() => {}); } catch (e) { /* tarayıcı izin vermedi */ } }
+  }
+  function tamEkranDugmesi() {
+    const acik = tamEkranMi();
+    $("#tamEkran").setAttribute("aria-pressed", String(acik));
+    $("#tamEkran").textContent = acik ? "Tam ekrandan çık" : "Tam ekran";
+    setTimeout(() => harita.invalidateSize({ pan: false }), 200);
+  }
+  $("#tamEkran").onclick = (e) => {
+    e.stopPropagation();
+    if (tamEkranMi()) { const c = document.exitFullscreen || document.webkitExitFullscreen; if (c) c.call(document); }
+    else tamEkranAc();
+  };
+  ["fullscreenchange", "webkitfullscreenchange"].forEach((ev) => document.addEventListener(ev, tamEkranDugmesi));
+  // Tarayıcılar tam ekranı yalnız bir dokunuşla açar: sayfadaki ilk dokunuş/tıklama tam ekrana geçirir
+  const ilkDokunus = (e) => {
+    document.removeEventListener("click", ilkDokunus, true);
+    if (e.target.closest && e.target.closest("#tamEkran")) return;
+    tamEkranAc();
+  };
+  if (!window.matchMedia("(max-width: 900px)").matches) document.addEventListener("click", ilkDokunus, true);
   $("#yardimAc").onclick = () => { $("#yardim").hidden = false; $("#yardim [data-kapat]").focus(); };
 
   /* Konu testi: her olay için 5 soru, renkli ve şekilli 4 seçenek, hıza göre puan */
@@ -4817,7 +4895,7 @@ window.SORULAR = {
   };
 
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") { document.querySelectorAll(".perde").forEach((p) => (p.hidden = true)); $("#buyukVideo").pause(); return; }
+    if (e.key === "Escape") { const acikti = !$("#buyukFoto").hidden; document.querySelectorAll(".perde").forEach((p) => (p.hidden = true)); if (acikti) buyukKapat(); return; }
     if (document.querySelector(".perde:not([hidden])") || e.target.closest("input, textarea, select")) return;
     if (e.key === "ArrowRight") { sunumuDurdur(); adim(1); e.preventDefault(); }
     if (e.key === "ArrowLeft") { sunumuDurdur(); adim(-1); e.preventDefault(); }
@@ -4834,7 +4912,7 @@ window.SORULAR = {
 })();
 
 </script>
-<script>window.CEPHE_SURUM = {"surum": "2.1.0", "tarih": "10 Kasım 2026"};</script>
+<script>window.CEPHE_SURUM = {"surum": "2.2.0", "tarih": "11 Kasım 2026"};</script>
 <script>
 /* Sürüm, kurulum ve güncelleme.
    - GitHub sitesinde: uygulama olarak yükleme düğmesi, çevrimdışı önbellek (sw.js), yeni sürüm hazır olunca bildirim.
@@ -4886,18 +4964,6 @@ window.SORULAR = {
     return;
   }
 
-  // Uygulama olarak yükleme (Chrome / Edge)
-  let istem = null;
-  const yukle = document.createElement("button");
-  yukle.className = "dugme"; yukle.id = "uygulamaYukle"; yukle.hidden = true;
-  yukle.textContent = "Uygulamayı yükle";
-  yukle.title = "CEPHE'yi bilgisayara ya da tahtaya uygulama olarak yükle; internet olmadan da açılır";
-  const araclar = document.querySelector(".ust-araclar");
-  if (araclar) araclar.insertBefore(yukle, araclar.firstChild);
-  window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); istem = e; yukle.hidden = false; });
-  yukle.onclick = async () => { if (!istem) return; istem.prompt(); await istem.userChoice; istem = null; yukle.hidden = true; };
-  window.addEventListener("appinstalled", () => { yukle.hidden = true; });
-
   if (!("serviceWorker" in navigator)) return;
   let yenileniyor = false;
   navigator.serviceWorker.addEventListener("controllerchange", () => { if (yenileniyor) return; yenileniyor = true; location.reload(); });
@@ -4925,10 +4991,6 @@ window.SORULAR = {
     });
     // Akıllı tahtada uzun süre açık kalırsa saatte bir güncelleme denetimi
     setInterval(() => kayit.update().catch(() => {}), 60 * 60 * 1000);
-    // Belgeseller büyük dosyalar: yalnız bilgisayar ve tahtada arka planda indirilir
-    navigator.serviceWorker.ready.then((r) => {
-      if (!window.matchMedia("(max-width: 900px)").matches && r.active) r.active.postMessage({ tip: "belgesel" });
-    });
   }).catch(() => { /* yerel dosyadan açılınca hizmet çalışanı yok */ });
 })();
 </script>
